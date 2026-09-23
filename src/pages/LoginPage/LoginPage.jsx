@@ -1,12 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function LoginPage() {
+  const navigate = useNavigate();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    navigate("/expenses");
+  };
+
   return (
     <main className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">Вход</h1>
 
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
           <input
             className="auth-input"
             type="email"
