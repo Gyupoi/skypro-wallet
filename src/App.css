@@ -121,6 +121,17 @@ input {
 
 .header-logout {
   margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: #000000;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 /* =========================
@@ -230,6 +241,42 @@ input {
 
 .auth-link:hover {
   color: #7234e9;
+}
+/* =========================
+   AUTH ERRORS
+   ========================= */
+
+.auth-input-error {
+  border-color: #F84D4D;
+  background-color: #ffe5e5;
+  color: #F84D4D;
+}
+
+.auth-input-error::placeholder {
+  opacity: 1;
+}
+
+.auth-input-error:focus {
+  border-color: #F84D4D;
+  background-color: #ffe5e5;
+}
+
+.auth-error {
+  margin: 0;
+  color: #F84D4D;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.auth-button:disabled {
+  background-color: #a0a0a0;
+  color: #ffffff;
+  cursor: default;
+}
+
+.auth-button:disabled:hover {
+  background-color: #a0a0a0;
 }
 
 /* =========================
