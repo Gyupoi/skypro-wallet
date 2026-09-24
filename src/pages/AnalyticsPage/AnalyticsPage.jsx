@@ -1,6 +1,11 @@
+import { useEffect, useState } from "react";
+import { getTransactionsByPeriod } from "../../api/api";
+
 const months = [
   {
     name: "Июль 2024",
+    month: 7,
+    year: 2024,
     days: [
       [1, 2, 3, 4, 5, 6, 7],
       [8, 9, 10, 11, 12, 13, 14],
@@ -11,6 +16,8 @@ const months = [
   },
   {
     name: "Август 2024",
+    month: 8,
+    year: 2024,
     days: [
       [null, null, null, 1, 2, 3, 4],
       [5, 6, 7, 8, 9, 10, 11],
@@ -21,46 +28,179 @@ const months = [
   },
 ];
 
-const chartData = [
-  {
-    category: "Еда",
-    value: "3 590 ₽",
-    height: 380,
-    color: "#D9B6FF",
-  },
-  {
-    category: "Транспорт",
-    value: "1 835 ₽",
-    height: 196,
-    color: "#FFB53D",
-  },
-  {
-    category: "Жилье",
-    value: "0 ₽",
-    height: 4,
-    color: "#6EE4FE",
-  },
-  {
-    category: "Развлечения",
-    value: "1 250 ₽",
-    height: 128,
-    color: "#B0AEFF",
-  },
-  {
-    category: "Образование",
-    value: "600 ₽",
-    height: 77,
-    color: "#BCEC30",
-  },
-  {
-    category: "Другое",
-    value: "2 306 ₽",
-    height: 250,
-    color: "#FFB9B8",
-  },
+const categoryNames = {
+  food: "Еда",
+  transport: "Транспорт",
+  housing: "Жилье",
+  joy: "Развлечения",
+  education: "Образование",
+  others: "Другое",
+};
+
+const categoryColors = {
+  food: "#D9B6FF",
+  transport: "#FFB53D",
+  housing: "#6EE4FE",
+  joy: "#B0AEFF",
+  education: "#BCEC30",
+  others: "#FFB9B8",
+};
+
+const categories = [
+  "food",
+  "transport",
+  "housing",
+  "joy",
+  "education",
+  "others",
 ];
 
+function formatSum(sum) {
+  return `${Number(sum).toLocaleString("ru-RU")} ₽`;
+}
+
+function getDateValue(day, month, year) {
+  return new Date(year, month - 1, day).getTime();
+}
+
+function prepareDate(day, month, year) {
+  return `${month}-${day}-${year}`;
+}
+
+function formatSelectedPeriod(start, end) {
+  if (!start || !end) {
+    return "";
+  }
+
+  if (
+    start.day === end.day &&
+    start.month === end.month &&
+    start.year === end.year
+  ) {
+    return `${start.day} ${
+      months.find((month) => month.month === start.month)?.name.split(" ")[0]
+    } ${start.year}`;
+  }
+
+  const startMonth = months
+    .find((month) => month.month === start.month)
+    ?.name.split(" ")[0];
+
+  const endMonth = months
+    .find((month) => month.month === end.month)
+    ?.name.split(" ")[0];
+
+  if (start.year === end.year && start.month === end.month) {
+    return `${start.day}–${end.day} ${startMonth} ${start.year}`;
+  }
+
+  return `${start.day} ${startMonth} – ${end.day} ${endMonth} ${end.year}`;
+}
+
 function AnalyticsPage() {
+  const [periodStart, setPeriodStart] = useState({
+    day: 10,
+    month: 7,
+    year: 2024,
+  });
+
+  const [periodEnd, setPeriodEnd] = useState({
+    day: 10,
+    month: 7,
+    year: 2024,
+  });
+
+  const [expenses, setExpenses] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const loadExpenses = async () => {
+      try {
+        setIsLoading(true);
+
+        const start = prepareDate(
+          periodStart.day,
+          periodStart.month,
+          periodStart.year,
+        );
+
+        const end = prepareDate(periodEnd.day, periodEnd.month, periodEnd.year);
+
+        const data = await getTransactionsByPeriod(start, end);
+
+        setExpenses(
+          Array.isArray(data) ? data : data.transactions || data.data || [],
+        );
+      } catch (error) {
+        console.error("Ошибка загрузки расходов за период:", error);
+
+        setExpenses([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExpenses();
+  }, [periodStart, periodEnd]);
+
+  const categoryTotals = categories.map((category) => {
+    const total = expenses
+      .filter((expense) => expense.category === category)
+      .reduce((sum, expense) => sum + Number(expense.sum || 0), 0);
+
+    return {
+      category,
+      value: total,
+    };
+  });
+
+  const total = categoryTotals.reduce((sum, item) => sum + item.value, 0);
+
+  const maxValue = Math.max(...categoryTotals.map((item) => item.value), 1);
+
+  const handleDateSelect = (day, month, year) => {
+    const selectedDate = {
+      day,
+      month,
+      year,
+    };
+
+    const selectedValue = getDateValue(day, month, year);
+    const startValue = getDateValue(
+      periodStart.day,
+      periodStart.month,
+      periodStart.year,
+    );
+
+    const endValue = getDateValue(
+      periodEnd.day,
+      periodEnd.month,
+      periodEnd.year,
+    );
+
+    if (periodStart && periodEnd && startValue === endValue) {
+      if (selectedValue < startValue) {
+        setPeriodStart(selectedDate);
+        setPeriodEnd(periodStart);
+      } else {
+        setPeriodEnd(selectedDate);
+      }
+
+      return;
+    }
+
+    setPeriodStart(selectedDate);
+    setPeriodEnd(selectedDate);
+  };
+
+  const startValue = getDateValue(
+    periodStart.day,
+    periodStart.month,
+    periodStart.year,
+  );
+
+  const endValue = getDateValue(periodEnd.day, periodEnd.month, periodEnd.year);
+
   return (
     <main className="analytics-page">
       <div className="analytics-container">
@@ -97,16 +237,32 @@ function AnalyticsPage() {
                           );
                         }
 
-                        const isSelected =
-                          month.name === "Июль 2024" && day === 10;
+                        const currentValue = getDateValue(
+                          day,
+                          month.month,
+                          month.year,
+                        );
+
+                        const isStart = currentValue === startValue;
+
+                        const isEnd = currentValue === endValue;
+
+                        const isInRange =
+                          currentValue >= startValue &&
+                          currentValue <= endValue;
 
                         return (
                           <button
                             className={`calendar-day ${
-                              isSelected ? "selected" : ""
+                              isInRange ? "selected" : ""
+                            } ${isStart ? "range-start" : ""} ${
+                              isEnd ? "range-end" : ""
                             }`}
                             type="button"
                             key={`${month.name}-${weekIndex}-${dayIndex}`}
+                            onClick={() =>
+                              handleDateSelect(day, month.month, month.year)
+                            }
                           >
                             {day}
                           </button>
@@ -120,28 +276,40 @@ function AnalyticsPage() {
           </section>
 
           <section className="chart-card">
-            <div className="chart-total">9 581 ₽</div>
+            <div className="chart-total">
+              {isLoading ? "Загрузка..." : formatSum(total)}
+            </div>
 
             <div className="chart-subtitle">
-              Расходы за <strong>10 июля 2024</strong>
+              Расходы за{" "}
+              <strong>{formatSelectedPeriod(periodStart, periodEnd)}</strong>
             </div>
 
             <div className="chart">
-              {chartData.map((item) => (
-                <div className="chart-item" key={item.category}>
-                  <div className="chart-value">{item.value}</div>
+              {categoryTotals.map((item) => {
+                const height =
+                  item.value === 0
+                    ? 4
+                    : Math.max(4, Math.round((item.value / maxValue) * 380));
 
-                  <div
-                    className="chart-bar"
-                    style={{
-                      height: `${item.height}px`,
-                      backgroundColor: item.color,
-                    }}
-                  ></div>
+                return (
+                  <div className="chart-item" key={item.category}>
+                    <div className="chart-value">{formatSum(item.value)}</div>
 
-                  <div className="chart-category">{item.category}</div>
-                </div>
-              ))}
+                    <div
+                      className="chart-bar"
+                      style={{
+                        height: `${height}px`,
+                        backgroundColor: categoryColors[item.category],
+                      }}
+                    ></div>
+
+                    <div className="chart-category">
+                      {categoryNames[item.category]}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         </div>

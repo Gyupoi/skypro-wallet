@@ -1,8 +1,19 @@
 const API_URL = "https://wedev-api.sky.pro/api";
 
 async function request(url, options = {}) {
+  const token = localStorage.getItem("token");
+
+  const headers = {
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_URL}${url}`, {
     ...options,
+    headers,
   });
 
   const data = await response.json().catch(() => null);
@@ -15,9 +26,7 @@ async function request(url, options = {}) {
     });
 
     throw new Error(
-      data?.message ||
-        data?.error ||
-        `Ошибка сервера: ${response.status}`,
+      data?.message || data?.error || `Ошибка сервера: ${response.status}`,
     );
   }
 
@@ -41,6 +50,40 @@ export async function loginUser({ login, password }) {
     body: JSON.stringify({
       login,
       password,
+    }),
+  });
+}
+
+export async function getTransactions() {
+  return request("/transactions", {
+    method: "GET",
+  });
+}
+
+export async function createTransaction({ description, sum, category, date }) {
+  return request("/transactions", {
+    method: "POST",
+    body: JSON.stringify({
+      description,
+      sum,
+      category,
+      date,
+    }),
+  });
+}
+
+export async function deleteTransaction(id) {
+  return request(`/transactions/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getTransactionsByPeriod(start, end) {
+  return request("/transactions/period", {
+    method: "POST",
+    body: JSON.stringify({
+      start,
+      end,
     }),
   });
 }

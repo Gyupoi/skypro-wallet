@@ -33,9 +33,7 @@ function Header() {
               <NavLink
                 to="/expenses"
                 className={({ isActive }) =>
-                  isActive
-                    ? "header-nav-link active"
-                    : "header-nav-link"
+                  isActive ? "header-nav-link active" : "header-nav-link"
                 }
               >
                 Мои расходы
@@ -44,9 +42,7 @@ function Header() {
               <NavLink
                 to="/analytics"
                 className={({ isActive }) =>
-                  isActive
-                    ? "header-nav-link active"
-                    : "header-nav-link"
+                  isActive ? "header-nav-link active" : "header-nav-link"
                 }
               >
                 Анализ расходов
