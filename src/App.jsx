@@ -35,15 +35,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        <Route
-          path="/new-expense"
-          element={
-            <ProtectedRoute>
-              <div>Новый расход</div>
-            </ProtectedRoute>
-          }
-        />
       </Routes>
     </BrowserRouter>
   );
