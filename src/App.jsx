@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/Header";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import ExpensesPage from "./pages/ExpensesPage/ExpensesPage";
@@ -17,11 +18,32 @@ function App() {
 
         <Route path="/register" element={<RegisterPage />} />
 
-        <Route path="/expenses" element={<ExpensesPage />} />
+        <Route
+          path="/expenses"
+          element={
+            <ProtectedRoute>
+              <ExpensesPage />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/new-expense" element={<div>Новый расход</div>} />
+        <Route
+          path="/new-expense"
+          element={
+            <ProtectedRoute>
+              <div>Новый расход</div>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

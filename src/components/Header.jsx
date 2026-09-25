@@ -1,10 +1,18 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login", { replace: true });
+  };
 
   return (
     <header className="header">
@@ -25,9 +33,7 @@ function Header() {
               <NavLink
                 to="/expenses"
                 className={({ isActive }) =>
-                  isActive
-                    ? "header-nav-link active"
-                    : "header-nav-link"
+                  isActive ? "header-nav-link active" : "header-nav-link"
                 }
               >
                 Мои расходы
@@ -36,18 +42,20 @@ function Header() {
               <NavLink
                 to="/analytics"
                 className={({ isActive }) =>
-                  isActive
-                    ? "header-nav-link active"
-                    : "header-nav-link"
+                  isActive ? "header-nav-link active" : "header-nav-link"
                 }
               >
                 Анализ расходов
               </NavLink>
             </nav>
 
-            <Link to="/login" className="header-logout">
+            <button
+              type="button"
+              className="header-logout"
+              onClick={handleLogout}
+            >
               Выйти
-            </Link>
+            </button>
           </>
         )}
       </div>
